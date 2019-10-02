@@ -38,6 +38,7 @@ namespace PipelineImplementations.Part3
                     return res;
                 })
                 .CreatePipeline();
+
             pipeline.Execute("The pipeline pattern is the best pattern");
         }
         
