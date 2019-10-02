@@ -2,28 +2,30 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace PipelineImplementations.Part1.BlockingCollection
 {
-    
-    public class InnerPipelineBuilder : IPipeline
+    internal sealed class InnerPipelineBuilder : IPipeline
     {
-        List<Func<object, object>> _pipelineSteps = new List<Func<object, object>>();
-        BlockingCollection<object>[] _buffers;
+        private readonly List<Func<object, object>> _pipelineSteps = new List<Func<object, object>>();
+
+        private IReadOnlyList<BlockingCollection<object>> _buffers;
 
         public event Action<object> Finished;
 
-public void AddStep<TStepIn, TStepOut>(Func<TStepIn, TStepOut> stepFunc)
-{
-    _pipelineSteps.Add(objInput => stepFunc.Invoke((TStepIn)(object)objInput));
-}
+        public InnerPipelineBuilder()
+        {
+        }
+
+        public void AddStep<TStepIn, TStepOut>(Func<TStepIn, TStepOut> stepFunc)
+        {
+            _pipelineSteps.Add(objInput => stepFunc.Invoke((TStepIn) objInput));
+        }
 
         public void Execute(object input)
         {
-            var first = _buffers[0];
+            var first = _buffers.First();
             first.Add(input);
         }
 
@@ -44,7 +46,7 @@ public void AddStep<TStepIn, TStepOut>(Func<TStepIn, TStepOut> stepFunc)
                         bool isLastStep = bufferIndexLocal == _pipelineSteps.Count - 1;
                         if (isLastStep)
                         {
-                            // This is dangerous as the invocation is added to the last step
+                            // This is dangerous as the invocation is added to the last step.
                             // Alternatively, you can utilize 'BeginInvoke' like here: https://stackoverflow.com/a/16336361/1229063
                             Finished?.Invoke(output);
                         }
@@ -55,7 +57,7 @@ public void AddStep<TStepIn, TStepOut>(Func<TStepIn, TStepOut> stepFunc)
                         }
                     }
                 });
-                bufferIndex++;
+                ++bufferIndex;
             }
             return this;
         }

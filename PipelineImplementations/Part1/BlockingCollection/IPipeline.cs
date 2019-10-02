@@ -1,16 +1,11 @@
 ﻿using System;
-using System.Threading.Tasks;
 
 namespace PipelineImplementations.Part1.BlockingCollection
 {
-public interface IPipeline
-{
-    void Execute(object input);
-    event Action<object> Finished;
-}
+    internal interface IPipeline
+    {
+        void Execute(object input);
 
-public interface IAwaitablePipeline<TOutput>
-{
-    Task<TOutput> Execute(object input);
-}
+        event Action<object> Finished;
+    }
 }

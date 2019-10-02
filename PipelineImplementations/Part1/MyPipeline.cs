@@ -1,38 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PipelineImplementations.Part1
+﻿namespace PipelineImplementations.Part1
 {
-    public class MyPipeline
+    internal sealed class MyPipeline
     {
+        public MyPipeline()
+        {
+        }
+
         public bool Execute(string input)
         {
-            string mostCommon = FindMostCommon(input);
-            int characters = CountChars(mostCommon);
-            bool isOdd = IsOdd(characters);
+            string mostCommon = Utils.FindMostCommon(input);
+            int characters = Utils.CountChars(mostCommon);
+            bool isOdd = Utils.IsOdd(characters);
             return isOdd;
-        }
-
-        private string FindMostCommon(string input)
-        {
-            return input.Split(' ')
-                .GroupBy(word => word)
-                .OrderBy(group => group.Count())
-                .Last()
-                .Key;
-        }
-
-        private int CountChars(string mostCommon)
-        {
-            return mostCommon.Length;
-        }
-
-        private bool IsOdd(int number)
-        {
-            return number % 2 == 1;
         }
     }
 }
