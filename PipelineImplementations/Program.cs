@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using PipelineImplementations.Part1;
 using PipelineImplementations.Part2;
 using PipelineImplementations.Part3;
-using PipelineImplementations.PartN;
+using PipelineImplementations.Part4;
 
 namespace PipelineImplementations
 {
@@ -21,8 +21,8 @@ namespace PipelineImplementations
 
             UsagePart3.Use();
 
-            await UsagePartN.Use1();
-            await UsagePartN.Use2();
+            await UsagePart4.Use1();
+            await UsagePart4.Use2();
 
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();

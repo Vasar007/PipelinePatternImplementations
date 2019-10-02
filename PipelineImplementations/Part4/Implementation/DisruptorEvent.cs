@@ -1,4 +1,4 @@
-﻿namespace PipelineImplementations.PartN.Impl
+﻿namespace PipelineImplementations.Part4.Implementation
 {
     internal sealed class DisruptorEvent
     {

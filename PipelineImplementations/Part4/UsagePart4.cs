@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using PipelineImplementations.PartN.Impl;
+using PipelineImplementations.Part4.Implementation;
 
-namespace PipelineImplementations.PartN
+namespace PipelineImplementations.Part4
 {
-    internal static class UsagePartN
+    internal static class UsagePart4
     {
         public static async Task Use1()
         {

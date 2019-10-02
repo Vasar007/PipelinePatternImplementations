@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Disruptor;
 using Disruptor.Dsl;
 
-namespace PipelineImplementations.PartN.Impl
+namespace PipelineImplementations.Part4.Implementation
 {
     internal sealed class DisruptorPipelineBuilder : IPipelineBuilder
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace PipelineImplementations.PartN
+namespace PipelineImplementations.Part4
 {
     internal interface IPipeline<TIn, TOut> : IDisposable
     {

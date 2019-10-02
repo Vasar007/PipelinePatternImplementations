@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PipelineImplementations.PartN
+namespace PipelineImplementations.Part4
 {
     internal interface IPipelineBuilder
     {
