@@ -1,4 +1,4 @@
-# PipelinePatternImplementations
+# Pipeline Pattern Implementations
 
 Different implementations for the pipeline pattern in C#.
 
