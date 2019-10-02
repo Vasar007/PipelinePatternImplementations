@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using PipelineImplementations.Part2.TPLDataflow;
 
 namespace PipelineImplementations.Part3.TPLDataflowWithAsync
 {
-    public class TPLDataflowSteppedAsyncFinal2<TIn, TOut>
+    internal sealed class TPLDataflowSteppedAsyncFinal2<TIn, TOut>
     {
-        private List<(IDataflowBlock Block, bool IsAsync)> _steps = new List<(IDataflowBlock Block, bool IsAsync)>();
+        private readonly List<(IDataflowBlock Block, bool IsAsync)> _steps = new List<(IDataflowBlock Block, bool IsAsync)>();
+
+        public TPLDataflowSteppedAsyncFinal2()
+        {
+        }
+
         public void AddStep<TLocalIn, TLocalOut>(Func<TLocalIn, TLocalOut> stepFunc)
         {
             if (_steps.Count == 0)
@@ -20,32 +23,29 @@ namespace PipelineImplementations.Part3.TPLDataflowWithAsync
             }
             else
             {
-
                 var lastStep = _steps.Last();
                 if (!lastStep.IsAsync)
                 {
                     var step = new TransformBlock<TLocalIn, TLocalOut>(stepFunc);
-                    var targetBlock = (lastStep.Block as ISourceBlock<TLocalIn>);
+                    var targetBlock = lastStep.Block as ISourceBlock<TLocalIn>;
                     targetBlock.LinkTo(step, new DataflowLinkOptions());
                     _steps.Add((step, IsAsync: false));
                 }
                 else
                 {
-                    var step = new TransformBlock<Task<TLocalIn>, TLocalOut>(async (input) => stepFunc(await input));
-                    var targetBlock = (lastStep.Block as ISourceBlock<Task<TLocalIn>>);
+                    var step = new TransformBlock<Task<TLocalIn>, TLocalOut>(async input => stepFunc(await input));
+                    var targetBlock = lastStep.Block as ISourceBlock<Task<TLocalIn>>;
                     targetBlock.LinkTo(step, new DataflowLinkOptions());
                     _steps.Add((step, IsAsync: false));
                 }
             }
-
         }
 
         public void AddStepAsync<TLocalIn, TLocalOut>(Func<TLocalIn, Task<TLocalOut>> stepFunc)
         {
             if (_steps.Count == 0)
             {
-                var step =
-                    new TransformBlock<TLocalIn, Task<TLocalOut>>(async (input) => await stepFunc(input));
+                var step = new TransformBlock<TLocalIn, Task<TLocalOut>>(input => stepFunc(input));
                 _steps.Add((step, IsAsync: true));
             }
             else
@@ -53,16 +53,16 @@ namespace PipelineImplementations.Part3.TPLDataflowWithAsync
                 var lastStep = _steps.Last();
                 if (lastStep.IsAsync)
                 {
-                    var step = new TransformBlock<Task<TLocalIn>, Task<TLocalOut>>(async (input) =>
-                        await stepFunc(await input));
+                    var step = new TransformBlock<Task<TLocalIn>, Task<TLocalOut>>(
+                        async (input) => await stepFunc(await input)
+                    );
                     var targetBlock = (lastStep.Block as ISourceBlock<Task<TLocalIn>>);
                     targetBlock.LinkTo(step, new DataflowLinkOptions());
                     _steps.Add((step, IsAsync: true));
                 }
                 else
                 {
-                    var step = new TransformBlock<TLocalIn, Task<TLocalOut>>(async (input) =>
-                        await stepFunc(input));
+                    var step = new TransformBlock<TLocalIn, Task<TLocalOut>>(input => stepFunc(input));
                     var targetBlock = (lastStep.Block as ISourceBlock<TLocalIn>);
                     targetBlock.LinkTo(step, new DataflowLinkOptions());
                     _steps.Add((step, IsAsync: true));
@@ -70,7 +70,7 @@ namespace PipelineImplementations.Part3.TPLDataflowWithAsync
             }
         }
 
-        public async Task CreatePipeline(Action<TOut> resultCallback)
+        public void CreatePipeline(Action<TOut> resultCallback)
         {
             var lastStep = _steps.Last();
             if (lastStep.IsAsync)
@@ -82,14 +82,14 @@ namespace PipelineImplementations.Part3.TPLDataflowWithAsync
             else
             {
                 var callBackStep = new ActionBlock<TOut>(t => resultCallback(t));
-                var targetBlock = (lastStep.Block as ISourceBlock<TOut>);
+                var targetBlock = lastStep.Block as ISourceBlock<TOut>;
                 targetBlock.LinkTo(callBackStep);
             }
         }
 
         public void Execute(TIn input)
         {
-            var firstStep = _steps[0].Block as ITargetBlock<TIn>;
+            var firstStep = _steps.First().Block as ITargetBlock<TIn>;
             firstStep.SendAsync(input);
         }
     }
