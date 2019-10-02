@@ -3,7 +3,7 @@ using Disruptor.Dsl;
 
 namespace PipelineImplementations.PartN.Impl
 {
-    public class DisruptorPipeline<TIn, TOut> : IPipeline<TIn, TOut>
+    internal sealed class DisruptorPipeline<TIn, TOut> : IPipeline<TIn, TOut>
     {
         private readonly Disruptor<DisruptorEvent> _disruptor;
 
@@ -15,7 +15,7 @@ namespace PipelineImplementations.PartN.Impl
 
         public Task<TOut> Execute(TIn data)
         {
-            // RunContinuationsAsynchronously to prevent continuation from "stealing" the releaser thread
+            // RunContinuationsAsynchronously to prevent continuation from "stealing" the releaser thread.
             var tcs = new TaskCompletionSource<TOut>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var sequence = _disruptor.RingBuffer.Next();

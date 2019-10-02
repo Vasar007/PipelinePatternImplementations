@@ -2,7 +2,7 @@
 
 namespace PipelineImplementations.PartN
 {
-    public interface IPipelineBuilder
+    internal interface IPipelineBuilder
     {
         IPipelineBuilderStep<TStepIn, TStepOut> Build<TStepIn, TStepOut>(Func<TStepIn, TStepOut> stepFunc, int workerCount);
     }

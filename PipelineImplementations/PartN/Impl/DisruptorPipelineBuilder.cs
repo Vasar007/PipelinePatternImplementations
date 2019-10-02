@@ -7,15 +7,8 @@ using Disruptor.Dsl;
 
 namespace PipelineImplementations.PartN.Impl
 {
-    public class DisruptorPipelineBuilder : IPipelineBuilder
+    internal sealed class DisruptorPipelineBuilder : IPipelineBuilder
     {
-        public IPipelineBuilderStep<TStepIn, TStepOut> Build<TStepIn, TStepOut>(Func<TStepIn, TStepOut> stepFunc, int workerCount)
-        {
-            var state = new State<TStepIn>();
-
-            return state.AddStep(stepFunc, workerCount);
-        }
-
         private interface IStep : IWorkHandler<DisruptorEvent>, IEventHandler<DisruptorEvent>
         {
             bool IsWorkerPool { get; }
@@ -23,9 +16,10 @@ namespace PipelineImplementations.PartN.Impl
             IWorkHandler<DisruptorEvent>[] AsWorkerPool();
         }
 
-        private class Step<TIn, TStepIn, TStepOut> : IPipelineBuilderStep<TIn, TStepOut>, IStep
+        private sealed class Step<TIn, TStepIn, TStepOut> : IPipelineBuilderStep<TIn, TStepOut>, IStep
         {
             private readonly Func<TStepIn, TStepOut> _stepFunc;
+
             private readonly int _threadCount;
 
             public Step(Func<TStepIn, TStepOut> stepFunc, int threadCount)
@@ -62,9 +56,13 @@ namespace PipelineImplementations.PartN.Impl
             }
         }
 
-        private class State<TIn>
+        private sealed class State<TIn>
         {
             private readonly List<IStep> _steps = new List<IStep>();
+
+            public State()
+            {
+            }
 
             public IPipelineBuilderStep<TIn, TStepOut> AddStep<TStepIn, TStepOut>(Func<TStepIn, TStepOut> stepFunc, int workerCount)
             {
@@ -98,13 +96,28 @@ namespace PipelineImplementations.PartN.Impl
             }
         }
 
-        private class Releaser<TOut> : IEventHandler<DisruptorEvent>
+        private sealed class Releaser<TOut> : IEventHandler<DisruptorEvent>
         {
+            public Releaser()
+            {
+            }
+
             public void OnEvent(DisruptorEvent data, long sequence, bool endOfBatch)
             {
                 var tcs = (TaskCompletionSource<TOut>)data.TaskCompletionSource;
                 tcs.SetResult(data.Read<TOut>());
             }
+        }
+
+        public DisruptorPipelineBuilder()
+        {
+        }
+
+        public IPipelineBuilderStep<TStepIn, TStepOut> Build<TStepIn, TStepOut>(Func<TStepIn, TStepOut> stepFunc, int workerCount)
+        {
+            var state = new State<TStepIn>();
+
+            return state.AddStep(stepFunc, workerCount);
         }
     }
 }
