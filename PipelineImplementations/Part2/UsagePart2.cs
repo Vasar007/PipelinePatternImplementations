@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -9,7 +6,7 @@ using PipelineImplementations.Part2.TPLDataflow;
 
 namespace PipelineImplementations.Part2
 {
-    public class UsagePart2
+    internal static class UsagePart2
     {
         public static void Use()
         {
@@ -22,13 +19,13 @@ namespace PipelineImplementations.Part2
 
         private static void UseBuilder()
         {
-var pipeline = new TPLPipelineWithAwaitAttempt2<string, bool>()
-    .AddStep<string, string>(sentence => FindMostCommon(sentence))
-    .AddStep<string, int>(word => word.Length)
-    .AddStep<int, bool>(length => length % 2 == 1)
-    .CreatePipeline();
+            var pipeline = new TPLPipelineWithAwaitAttempt2<string, bool>()
+                .AddStep<string, string>(sentence => Utils.FindMostCommon(sentence))
+                .AddStep<string, int>(word => Utils.CountChars(word))
+                .AddStep<int, bool>(length => Utils.IsOdd(length))
+                .CreatePipeline();
 
-            System.Threading.Tasks.Task.Run(async () =>
+            Task.Run(async () =>
             {
                 bool res;
                 try
@@ -36,7 +33,7 @@ var pipeline = new TPLPipelineWithAwaitAttempt2<string, bool>()
                     res = await pipeline.Execute("The pipeline pattern is the best pattern");
                     Console.WriteLine(res);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                 }
 
@@ -45,7 +42,7 @@ var pipeline = new TPLPipelineWithAwaitAttempt2<string, bool>()
                     res = await pipeline.Execute("The pipeline pattern is the best pattern");
                     Console.WriteLine(res);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                 }
 
@@ -54,7 +51,7 @@ var pipeline = new TPLPipelineWithAwaitAttempt2<string, bool>()
                     res = await pipeline.Execute("abcd");
                     Console.WriteLine(res);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                 }
 
@@ -63,7 +60,7 @@ var pipeline = new TPLPipelineWithAwaitAttempt2<string, bool>()
                     res = await pipeline.Execute("abcd");
                     Console.WriteLine(res);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                 }
 
@@ -85,7 +82,7 @@ var pipeline = new TPLPipelineWithAwaitAttempt2<string, bool>()
                  Console.WriteLine(res);
                  Console.WriteLine(Utils.GetThreadPoolThreadsInUse());
              });
-            for (int i = 0; i < 50; i++)
+            for (int i = 0; i < 50; ++i)
             {
                 pipeline.Post("The pipeline pattern is the best pattern");
                 
@@ -102,7 +99,7 @@ var pipeline = new TPLPipelineWithAwaitAttempt2<string, bool>()
 
             Task.Run(async () =>
             {
-                for (int i = 0; i < 50; i++)
+                for (int i = 0; i < 50; ++i)
                 {
                     await pipeline.SendAsync("The pipeline pattern is the best pattern");
                 }
@@ -113,30 +110,17 @@ var pipeline = new TPLPipelineWithAwaitAttempt2<string, bool>()
         {
             var pipeline = TPLDataflowPipelineWithAwaitAttempt1.CreatePipeline();
 
-            var tsk = System.Threading.Tasks.Task.Run(async () =>
+            var tsk = Task.Run(async () =>
             {
-var tcs = new TaskCompletionSource<bool>();
-var tc = new TC<string, bool>(
-    "The pipeline patter is the best patter", tcs);
-var task = tcs.Task;
-await pipeline.SendAsync(tc);
-var result = await task;
-Console.WriteLine(result);
+                var tcs = new TaskCompletionSource<bool>();
+                var tc = new TC<string, bool>("The pipeline patter is the best patter", tcs);
+                var task = tcs.Task;
+                await pipeline.SendAsync(tc);
+                var result = await task;
+                Console.WriteLine(result);
                 //await Task.Delay(1000);
             });
             tsk.Wait(CancellationToken.None);
-        }
-
-        private static string FindMostCommon(string input)
-        {
-            if (input == "abcd")
-                throw new Exception();
-
-            return input.Split(' ')
-                .GroupBy(word => word)
-                .OrderBy(group => group.Count())
-                .Last()
-                .Key;
         }
     }
 }
